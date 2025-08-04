@@ -1,10 +1,10 @@
-# BodyForge - Forge Your Strength Anywhere
+# Fitty - Your Personal Fitness Companion
 
 Transform your body with the ultimate bodyweight training companion. Build strength anywhere, anytime with guided workouts and progress tracking.
 
-## 🔥 Why BodyForge?
+## 🔥 Why Fitty?
 
-**BodyForge** isn't just another fitness app - it's your personal strength-building companion that transforms any space into your gym. Whether you're at home, traveling, or just getting started on your fitness journey, BodyForge adapts to you.
+**Fitty** isn't just another fitness app - it's your personal strength-building companion that transforms any space into your gym. Whether you're at home, traveling, or just getting started on your fitness journey, Fitty adapts to you.
 
 ## Features
 

@@ -6,11 +6,11 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "BodyForge - Forge Your Strength Anywhere",
+  title: "Fitty - Your Personal Fitness Companion",
   description:
     "Transform your body with bodyweight training. Build strength anywhere, anytime with guided workouts and progress tracking.",
-  keywords: "fitness, bodyweight, training, workout, exercise, health, strength, forge",
-  authors: [{ name: "BodyForge Team" }],
+  keywords: "fitness, bodyweight, training, workout, exercise, health, strength, fitty",
+  authors: [{ name: "Fitty Team" }],
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.ico",
@@ -35,7 +35,7 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="BodyForge" />
+        <meta name="apple-mobile-web-app-title" content="Fitty" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className={inter.className}>{children}</body>
