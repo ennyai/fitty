@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BodyForge - Forge Your Strength Anywhere
+
+Transform your body with the ultimate bodyweight training companion. Build strength anywhere, anytime with guided workouts and progress tracking.
+
+## 🔥 Why BodyForge?
+
+**BodyForge** isn't just another fitness app - it's your personal strength-building companion that transforms any space into your gym. Whether you're at home, traveling, or just getting started on your fitness journey, BodyForge adapts to you.
+
+## Features
+
+- 🏋️ **Comprehensive Exercise Database**: 20+ bodyweight exercises with detailed instructions and GIF demonstrations
+- 📱 **Progressive Web App**: Install on your device for offline access
+- 🎯 **Adaptive Workouts**: Beginner, intermediate, and advanced difficulty levels
+- ✈️ **Vacation Mode**: Equipment-free exercises for travel
+- 📊 **Progress Tracking**: Workout streaks, personal records, and history
+- ⏱️ **Built-in Timers**: Rest periods and hold timers for exercises
+- 🎨 **Modern UI**: Clean, responsive design with smooth animations
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
+- Node.js 18+ 
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+\`\`\`bash
+git clone <your-repo-url>
+cd fitbody-app
+\`\`\`
+
+2. Install dependencies:
+\`\`\`bash
+npm install
+\`\`\`
+
+3. Run the development server:
+\`\`\`bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+\`\`\`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Building for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+\`\`\`bash
+npm run build
+npm start
+\`\`\`
 
-## Learn More
+## Deployment
 
-To learn more about Next.js, take a look at the following resources:
+This app is optimized for deployment on Vercel:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Push your code to GitHub
+2. Connect your repository to Vercel
+3. Deploy with zero configuration
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Other Platforms
 
-## Deploy on Vercel
+- **Netlify**: Works out of the box
+- **Railway**: Add `railway.json` for configuration
+- **Docker**: Dockerfile included for containerization
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Exercise Database
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The app includes exercises for:
+- **Push movements**: Push-ups, dips, pike push-ups
+- **Pull movements**: Pull-ups, doorway rows, superman holds
+- **Core**: Planks, crunches, mountain climbers
+- **Legs**: Squats, lunges, wall sits
+- **Cardio**: Burpees, jumping jacks, high knees
+
+Each exercise includes:
+- Animated GIF demonstration
+- Detailed instructions
+- Target muscle groups
+- Equipment requirements
+
+## PWA Features
+
+- **Offline Support**: Works without internet connection
+- **Install Prompt**: Add to home screen on mobile devices
+- **Responsive Design**: Optimized for all screen sizes
+- **Touch-Friendly**: Large buttons and smooth interactions
+
+## Data Storage
+
+- Uses localStorage for client-side data persistence
+- Tracks workout history, personal records, and user preferences
+- No server required - fully client-side application
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Support
+
+For support, please open an issue on GitHub or contact the development team.
