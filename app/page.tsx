@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Home, Plane, Trophy, ChevronRight, ChevronLeft, RotateCcw, Check, X, Info, Play, AlertCircle } from 'lucide-react'
+import { Home, Plane, Trophy, ChevronRight, ChevronLeft, RotateCcw, Check, X, Info, Play, AlertCircle, Plus, Minus, Settings, ChevronDown, ChevronUp, Clock } from 'lucide-react'
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -220,6 +220,11 @@ const BodyweightTrainingApp = () => {
   const [showEndConfirm, setShowEndConfirm] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [showExerciseDetail, setShowExerciseDetail] = useState(null)
+  const [customWorkoutExercises, setCustomWorkoutExercises] = useState([])
+  const [customWorkoutSets, setCustomWorkoutSets] = useState(3)
+  const [customWorkoutReps, setCustomWorkoutReps] = useState({})
+  const [workoutStartTime, setWorkoutStartTime] = useState(null)
+  const [expandedWorkouts, setExpandedWorkouts] = useState([])
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -253,6 +258,11 @@ const BodyweightTrainingApp = () => {
 
   // Generate daily workout based on level and vacation mode
   const generateWorkout = () => {
+    // For custom workouts, they're already set in todaysWorkout
+    if (userLevel === "custom" && todaysWorkout.length > 0) {
+      return
+    }
+
     const availableExercises = Object.entries(exercises).filter(
       ([key, exercise]) => !vacationMode || !exercise.requiresEquipment,
     )
@@ -261,6 +271,7 @@ const BodyweightTrainingApp = () => {
       beginner: { exercises: 4, sets: 2, reps: "8-12", holdTime: 20 },
       intermediate: { exercises: 5, sets: 3, reps: "10-15", holdTime: 30 },
       advanced: { exercises: 6, sets: 4, reps: "15-20", holdTime: 45 },
+      custom: { exercises: 0, sets: 3, reps: "10-15", holdTime: 30 } // Default fallback
     }
 
     const template = workoutTemplate[userLevel]
@@ -325,6 +336,7 @@ const BodyweightTrainingApp = () => {
     setCurrentView("workout")
     setCurrentExerciseIndex(0)
     setCurrentSet(1)
+    setWorkoutStartTime(new Date())
   }
 
   // Complete current set
@@ -364,9 +376,20 @@ const BodyweightTrainingApp = () => {
   // Complete workout
   const completeWorkout = () => {
     const today = new Date().toISOString().split("T")[0]
+    const endTime = new Date()
+    const durationMinutes = workoutStartTime ? Math.floor((endTime - workoutStartTime) / 60000) : 0
+    
     const workoutData = {
       date: today,
-      exercises: todaysWorkout.map((ex) => ex.name),
+      exercises: todaysWorkout.map((ex) => ({
+        name: ex.name,
+        reps: ex.reps,
+        isHold: ex.isHold
+      })),
+      totalExercises: todaysWorkout.length,
+      totalSets: todaysWorkout[0]?.sets || currentSet,
+      duration: durationMinutes,
+      fitnessLevel: userLevel,
       vacationMode,
       completed: true,
     }
@@ -379,6 +402,7 @@ const BodyweightTrainingApp = () => {
     setHoldTime(0)
     setIsResting(false)
     setRestTime(60)
+    setWorkoutStartTime(null)
   }
 
   // End workout early
@@ -515,20 +539,25 @@ const BodyweightTrainingApp = () => {
 
             <div className="mb-6">
               <label className="text-sm text-gray-600 mb-2 block">Fitness Level</label>
-              <div className="grid grid-cols-3 gap-2">
-                {["beginner", "intermediate", "advanced"].map((level) => (
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { value: "beginner", label: "Easy" },
+                  { value: "intermediate", label: "Medium" },
+                  { value: "advanced", label: "Hard" },
+                  { value: "custom", label: "Custom" }
+                ].map((level) => (
                   <Button
-                    key={level}
-                    variant={userLevel === level ? "default" : "outline"}
+                    key={level.value}
+                    variant={userLevel === level.value ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setUserLevel(level)}
-                    className={`capitalize ${
-                      userLevel === level 
+                    onClick={() => setUserLevel(level.value)}
+                    className={`${
+                      userLevel === level.value 
                         ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white border-0" 
                         : ""
                     }`}
                   >
-                    {level}
+                    {level.label}
                   </Button>
                 ))}
               </div>
@@ -536,13 +565,17 @@ const BodyweightTrainingApp = () => {
 
             <Button
               onClick={() => {
-                generateWorkout()
-                setCurrentView("preview")
+                if (userLevel === "custom") {
+                  setCurrentView("customBuilder")
+                } else {
+                  generateWorkout()
+                  setCurrentView("preview")
+                }
               }}
               className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 text-lg font-semibold"
               size="lg"
             >
-              Today's Workout
+              {userLevel === "custom" ? "Build Custom Workout" : "Today's Workout"}
               <ChevronRight className="ml-2 w-5 h-5" />
             </Button>
           </CardContent>
@@ -554,15 +587,84 @@ const BodyweightTrainingApp = () => {
             {workoutHistory
               .slice(-3)
               .reverse()
-              .map((workout, index) => (
-                <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
-                  <span className="text-gray-600">{new Date(workout.date).toLocaleDateString()}</span>
-                  <div className="flex items-center gap-2">
-                    {workout.vacationMode && <Plane className="w-4 h-4 text-orange-500" />}
-                    <Check className="w-4 h-4 text-green-500" />
+              .map((workout, index) => {
+                const workoutKey = `${workout.date}-${index}`
+                const isExpanded = expandedWorkouts.includes(workoutKey)
+                const fitnessLevelLabels = {
+                  beginner: "Easy",
+                  intermediate: "Medium",
+                  advanced: "Hard",
+                  custom: "Custom"
+                }
+                const fitnessLevelColors = {
+                  beginner: "bg-green-100 text-green-700",
+                  intermediate: "bg-blue-100 text-blue-700",
+                  advanced: "bg-red-100 text-red-700",
+                  custom: "bg-purple-100 text-purple-700"
+                }
+
+                return (
+                  <div key={index} className="py-3 border-b last:border-0">
+                    <div 
+                      className="flex items-center justify-between cursor-pointer hover:bg-gray-50 -mx-2 px-2 py-1 rounded"
+                      onClick={() => {
+                        setExpandedWorkouts(prev => 
+                          prev.includes(workoutKey) 
+                            ? prev.filter(k => k !== workoutKey)
+                            : [...prev, workoutKey]
+                        )
+                      }}
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-gray-800 font-medium">
+                            {new Date(workout.date).toLocaleDateString()}
+                          </span>
+                          {isExpanded ? (
+                            <ChevronUp className="w-4 h-4 text-gray-500" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-gray-500" />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-sm">
+                          <span className="text-gray-600">
+                            {workout.totalExercises || workout.exercises?.length || 0} exercises • {workout.totalSets || 3} circuits
+                            {workout.duration ? ` • ${workout.duration} min` : ''}
+                          </span>
+                          <Badge 
+                            variant="secondary" 
+                            className={`text-xs ${fitnessLevelColors[workout.fitnessLevel] || 'bg-gray-100 text-gray-700'}`}
+                          >
+                            {fitnessLevelLabels[workout.fitnessLevel] || 'Unknown'}
+                          </Badge>
+                          {workout.vacationMode && <Plane className="w-4 h-4 text-orange-500" />}
+                        </div>
+                      </div>
+                    </div>
+
+                    {isExpanded && workout.exercises && (
+                      <div className="mt-3 ml-2 p-3 bg-gray-50 rounded-lg">
+                        <p className="text-xs font-medium text-gray-600 mb-2">
+                          Circuit {workout.totalSets || 3}x:
+                        </p>
+                        <div className="space-y-1">
+                          {workout.exercises.map((exercise, idx) => (
+                            <div key={idx} className="flex items-center gap-2 text-sm text-gray-700">
+                              <span className="text-gray-400">•</span>
+                              <span>{typeof exercise === 'string' ? exercise : exercise.name}</span>
+                              {exercise.reps && (
+                                <span className="text-gray-500">
+                                  ({exercise.isHold ? `${exercise.reps}s hold` : `${exercise.reps} reps`})
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                )
+              })}
             {workoutHistory.length === 0 && (
               <p className="text-gray-400 text-center py-4">No workouts yet. Let's start!</p>
             )}
@@ -855,6 +957,206 @@ const BodyweightTrainingApp = () => {
     </div>
   )
 
+  const renderCustomBuilder = () => {
+    const exercisesByCategory = {
+      push: [],
+      pull: [],
+      core: [],
+      legs: [],
+      cardio: [],
+      full: []
+    }
+
+    // Group exercises by category
+    Object.entries(exercises).forEach(([key, exercise]) => {
+      if (exercisesByCategory[exercise.category]) {
+        exercisesByCategory[exercise.category].push({ key, ...exercise })
+      }
+    })
+
+    // Filter by vacation mode
+    Object.keys(exercisesByCategory).forEach(category => {
+      exercisesByCategory[category] = exercisesByCategory[category].filter(
+        exercise => !vacationMode || !exercise.requiresEquipment
+      )
+    })
+
+    const toggleExercise = (exerciseKey) => {
+      setCustomWorkoutExercises(prev => {
+        const exists = prev.find(ex => ex.key === exerciseKey)
+        if (exists) {
+          // Remove exercise
+          const newReps = { ...customWorkoutReps }
+          delete newReps[exerciseKey]
+          setCustomWorkoutReps(newReps)
+          return prev.filter(ex => ex.key !== exerciseKey)
+        } else {
+          // Add exercise
+          const exercise = exercises[exerciseKey]
+          const defaultReps = exercise.isHold ? "30" : "12"
+          setCustomWorkoutReps(prev => ({ ...prev, [exerciseKey]: defaultReps }))
+          return [...prev, { key: exerciseKey, ...exercise }]
+        }
+      })
+    }
+
+    const updateReps = (exerciseKey, value) => {
+      setCustomWorkoutReps(prev => ({ ...prev, [exerciseKey]: value }))
+    }
+
+    const startCustomWorkout = () => {
+      if (customWorkoutExercises.length === 0) return
+
+      const workout = customWorkoutExercises.map(exercise => ({
+        ...exercise,
+        sets: customWorkoutSets,
+        reps: exercise.isHold ? parseInt(customWorkoutReps[exercise.key]) : customWorkoutReps[exercise.key]
+      }))
+
+      setTodaysWorkout(workout)
+      setWorkoutActive(true)
+      setCurrentView("workout")
+      setCurrentExerciseIndex(0)
+      setCurrentSet(1)
+      setWorkoutStartTime(new Date())
+    }
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="max-w-md mx-auto">
+          <Card className="shadow-xl mb-4">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">Custom Workout</h2>
+                <Button variant="ghost" size="sm" onClick={() => setCurrentView("home")}>
+                  <X className="w-6 h-6" />
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between mb-4 p-3 bg-indigo-50 rounded-lg">
+                <div>
+                  <p className="text-sm text-indigo-600 font-medium">Selected Exercises</p>
+                  <p className="text-2xl font-bold text-indigo-800">{customWorkoutExercises.length}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Circuits:</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCustomWorkoutSets(Math.max(1, customWorkoutSets - 1))}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </Button>
+                  <span className="font-bold text-lg w-8 text-center">{customWorkoutSets}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCustomWorkoutSets(Math.min(5, customWorkoutSets + 1))}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {vacationMode && (
+                <div className="p-3 bg-orange-50 rounded-lg mb-4">
+                  <p className="text-sm text-orange-700 flex items-center gap-2">
+                    <Plane className="w-4 h-4" />
+                    Vacation mode: Equipment-free exercises only
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="space-y-4">
+            {Object.entries(exercisesByCategory).map(([category, categoryExercises]) => {
+              if (categoryExercises.length === 0) return null
+
+              return (
+                <Card key={category} className="shadow-xl">
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-gray-800 capitalize mb-3">{category} Exercises</h3>
+                    <div className="space-y-2">
+                      {categoryExercises.map(exercise => {
+                        const isSelected = customWorkoutExercises.some(ex => ex.key === exercise.key)
+                        return (
+                          <div
+                            key={exercise.key}
+                            className={`p-3 rounded-lg border-2 transition-all ${
+                              isSelected 
+                                ? "border-indigo-500 bg-indigo-50" 
+                                : "border-gray-200 bg-white hover:border-gray-300"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => toggleExercise(exercise.key)}
+                                    className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                  />
+                                  <label className="font-medium text-gray-800 cursor-pointer flex-1" onClick={() => toggleExercise(exercise.key)}>
+                                    {exercise.name}
+                                  </label>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setShowExerciseDetail(exercise)}
+                                    className="p-1 h-6 w-6"
+                                  >
+                                    <Info className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                                <p className="text-xs text-gray-600 ml-6">{exercise.targets}</p>
+                              </div>
+                              {isSelected && (
+                                <div className="flex items-center gap-1 ml-2">
+                                  <input
+                                    type="text"
+                                    value={customWorkoutReps[exercise.key] || ""}
+                                    onChange={(e) => updateReps(exercise.key, e.target.value)}
+                                    className="w-12 px-2 py-1 text-center border rounded text-sm"
+                                    placeholder="12"
+                                  />
+                                  <span className="text-xs text-gray-600">
+                                    {exercise.isHold ? "sec" : "reps"}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+
+          <div className="mt-6 mb-4">
+            <Button
+              onClick={startCustomWorkout}
+              disabled={customWorkoutExercises.length === 0}
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white py-4 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              size="lg"
+            >
+              Begin Custom Workout
+              {customWorkoutExercises.length > 0 && (
+                <span className="ml-2">({customWorkoutExercises.length} exercises)</span>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const renderStats = () => (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-md mx-auto">
@@ -945,6 +1247,7 @@ const BodyweightTrainingApp = () => {
       {currentView === "workout" && renderWorkout()}
       {currentView === "complete" && renderComplete()}
       {currentView === "stats" && renderStats()}
+      {currentView === "customBuilder" && renderCustomBuilder()}
 
       {showExerciseDetail && (
         <ExerciseDetailModal exercise={showExerciseDetail} onClose={() => setShowExerciseDetail(null)} />
