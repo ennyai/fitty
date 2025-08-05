@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Home, Plane, Trophy, ChevronRight, ChevronLeft, RotateCcw, Check, X, Info, Play } from 'lucide-react'
+import { Home, Plane, Trophy, ChevronRight, ChevronLeft, RotateCcw, Check, X, Info, Play, AlertCircle } from 'lucide-react'
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -522,7 +522,11 @@ const BodyweightTrainingApp = () => {
                     variant={userLevel === level ? "default" : "outline"}
                     size="sm"
                     onClick={() => setUserLevel(level)}
-                    className="capitalize"
+                    className={`capitalize ${
+                      userLevel === level 
+                        ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white border-0" 
+                        : ""
+                    }`}
                   >
                     {level}
                   </Button>
@@ -682,16 +686,30 @@ const BodyweightTrainingApp = () => {
               </div>
 
               {showEndConfirm && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                  <Card className="max-w-sm w-full">
-                    <CardContent className="p-6">
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2">End Workout Early?</h3>
-                      <p className="text-gray-600 mb-6">Your progress will not be saved.</p>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                  <Card className="max-w-sm w-full shadow-2xl border-0 bg-white">
+                    <CardContent className="p-6 bg-white rounded-lg">
+                      <div className="flex items-start gap-3 mb-4">
+                        <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <AlertCircle className="w-5 h-5 text-red-600" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800 mb-1">End Workout Early?</h3>
+                          <p className="text-sm text-gray-600">Your progress will not be saved.</p>
+                        </div>
+                      </div>
                       <div className="flex gap-3">
-                        <Button variant="outline" onClick={() => setShowEndConfirm(false)} className="flex-1">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setShowEndConfirm(false)} 
+                          className="flex-1 border-gray-300 hover:bg-gray-50"
+                        >
                           Continue Workout
                         </Button>
-                        <Button variant="destructive" onClick={endWorkoutEarly} className="flex-1">
+                        <Button 
+                          onClick={endWorkoutEarly} 
+                          className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0"
+                        >
                           End Workout
                         </Button>
                       </div>
@@ -701,9 +719,23 @@ const BodyweightTrainingApp = () => {
               )}
 
               {isResting ? (
-                <div className="text-center py-12">
+                <div className="text-center py-8">
                   <h3 className="text-2xl font-bold text-gray-800 mb-4">Rest Time</h3>
                   <div className="text-6xl font-bold text-indigo-600 mb-6">{restTime}s</div>
+                  
+                  {/* Next Exercise Preview */}
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-2">Next up:</p>
+                    <h4 className="text-lg font-semibold text-gray-800">
+                      {todaysWorkout[currentExerciseIndex]?.name}
+                    </h4>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {todaysWorkout[currentExerciseIndex]?.isHold 
+                        ? `${todaysWorkout[currentExerciseIndex]?.reps}s hold` 
+                        : `${todaysWorkout[currentExerciseIndex]?.reps} reps`}
+                    </p>
+                  </div>
+                  
                   <Button variant="outline" onClick={() => setRestTime(0)}>
                     Skip Rest
                   </Button>
