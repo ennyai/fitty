@@ -4,7 +4,7 @@ const nextConfig = {
     webpackBuildWorker: true,
   },
   
-  // Optimize images
+  // Optimize images for Railway deployment
   images: {
     domains: ['placeholder.svg'],
     formats: ['image/webp', 'image/avif'],
@@ -14,7 +14,8 @@ const nextConfig = {
   // Enable compression
   compress: true,
   
-  // SWC minification is now default in Next.js 15+
+  // Output configuration for Railway
+  output: 'standalone',
   
   // Headers for PWA
   async headers() {
@@ -31,7 +32,7 @@ const nextConfig = {
     ]
   },
   
-  // ESLint and TypeScript configurations
+  // ESLint and TypeScript configurations for faster builds
   eslint: {
     ignoreDuringBuilds: true,
   },
