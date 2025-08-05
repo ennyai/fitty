@@ -470,7 +470,7 @@ const BodyweightTrainingApp = () => {
           <CardContent className="p-6">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                💪 BodyForge 
+                💪 Fitty 
               </h1>
               <Button variant="ghost" size="sm" onClick={() => setCurrentView("stats")}>
                 <Trophy className="w-5 h-5" />

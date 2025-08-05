@@ -1,7 +1,7 @@
 {
-  "name": "fitbody-bodyweight-training",
+  "name": "fitty-app",
   "version": "1.0.0",
-  "description": "A comprehensive bodyweight training app with exercise tracking and progress monitoring",
+  "description": "Get Fit-y",
   "private": true,
   "scripts": {
     "dev": "next dev",
