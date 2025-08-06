@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import WeeklyWorkoutTracker from "@/components/WeeklyWorkoutTracker"
 
 const BodyweightTrainingApp = () => {
   // Exercise database with GIFs and enhanced data
@@ -581,95 +582,10 @@ const BodyweightTrainingApp = () => {
           </CardContent>
         </Card>
 
-        <Card className="shadow-xl">
-          <CardContent className="p-6">
-            <h3 className="font-semibold text-gray-800 mb-3">Recent Workouts</h3>
-            {workoutHistory
-              .slice(-3)
-              .reverse()
-              .map((workout, index) => {
-                const workoutKey = `${workout.date}-${index}`
-                const isExpanded = expandedWorkouts.includes(workoutKey)
-                const fitnessLevelLabels = {
-                  beginner: "Easy",
-                  intermediate: "Medium",
-                  advanced: "Hard",
-                  custom: "Custom"
-                }
-                const fitnessLevelColors = {
-                  beginner: "bg-green-100 text-green-700",
-                  intermediate: "bg-blue-100 text-blue-700",
-                  advanced: "bg-red-100 text-red-700",
-                  custom: "bg-purple-100 text-purple-700"
-                }
-
-                return (
-                  <div key={index} className="py-3 border-b last:border-0">
-                    <div 
-                      className="flex items-center justify-between cursor-pointer hover:bg-gray-50 -mx-2 px-2 py-1 rounded"
-                      onClick={() => {
-                        setExpandedWorkouts(prev => 
-                          prev.includes(workoutKey) 
-                            ? prev.filter(k => k !== workoutKey)
-                            : [...prev, workoutKey]
-                        )
-                      }}
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-gray-800 font-medium">
-                            {new Date(workout.date).toLocaleDateString()}
-                          </span>
-                          {isExpanded ? (
-                            <ChevronUp className="w-4 h-4 text-gray-500" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-gray-500" />
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3 text-sm">
-                          <span className="text-gray-600">
-                            {workout.totalExercises || workout.exercises?.length || 0} exercises • {workout.totalSets || 3} circuits
-                            {workout.duration ? ` • ${workout.duration} min` : ''}
-                          </span>
-                          <Badge 
-                            variant="secondary" 
-                            className={`text-xs ${fitnessLevelColors[workout.fitnessLevel] || 'bg-gray-100 text-gray-700'}`}
-                          >
-                            {fitnessLevelLabels[workout.fitnessLevel] || 'Unknown'}
-                          </Badge>
-                          {workout.vacationMode && <Plane className="w-4 h-4 text-orange-500" />}
-                        </div>
-                      </div>
-                    </div>
-
-                    {isExpanded && workout.exercises && (
-                      <div className="mt-3 ml-2 p-3 bg-gray-50 rounded-lg">
-                        <p className="text-xs font-medium text-gray-600 mb-2">
-                          Circuit {workout.totalSets || 3}x:
-                        </p>
-                        <div className="space-y-1">
-                          {workout.exercises.map((exercise, idx) => (
-                            <div key={idx} className="flex items-center gap-2 text-sm text-gray-700">
-                              <span className="text-gray-400">•</span>
-                              <span>{typeof exercise === 'string' ? exercise : exercise.name}</span>
-                              {exercise.reps && (
-                                <span className="text-gray-500">
-                                  ({exercise.isHold ? `${exercise.reps}s hold` : `${exercise.reps} reps`})
-                                </span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            {workoutHistory.length === 0 && (
-              <p className="text-gray-400 text-center py-4">No workouts yet. Let's start!</p>
-            )}
-          </CardContent>
-        </Card>
+        <WeeklyWorkoutTracker 
+          workoutHistory={workoutHistory}
+          currentStreak={calculateStreak()}
+        />
       </div>
     </div>
   )
